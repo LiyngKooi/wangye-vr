@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head><style id="loading-critical">
+/* 換頁畫面：在其他樣式載入前就先置中，避免燈籠先出現在右下角再跳到中間 */
+#loading-overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.95);text-align:center;transition:opacity .7s}
+#loading-overlay.opacity-0{opacity:0}
+#loading-overlay.pointer-events-none{pointer-events:none}
+#loadingText{text-align:center}
+@media (max-width:767px),(max-height:500px){html,body{overflow:hidden;overscroll-behavior:none}}
+@media (max-width:767px),(max-height:500px){#loadingText{font-size:20px;letter-spacing:.06em;line-height:1.4;padding:0 28px;max-width:100vw;box-sizing:border-box}}
+</style>
+<script src="lib/tailwind.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>操作說明與安全提醒 | 高雄王爺信仰 VR</title>
+
+<script>
+  const VR_REMOTE_ASSET_BASE = 'https://id-preview--02427422-a3c2-4695-b3ce-e3b6828e78e6.lovable.app';
+  function vrAssetUrl(path) {
+    if (!path) return path;
+    if (/^(https?:|blob:|data:)/.test(path)) return path;
+    return path;
+  }
+  function applyVrAssetPaths(root = document) {
+    root.querySelectorAll('[data-asset-path]').forEach((el) => {
+      const path = el.getAttribute('data-asset-path');
+      if (!path) return;
+      const resolved = vrAssetUrl(path);
+      if (el.tagName === 'SOURCE') el.setAttribute('srcset', resolved);
+      else el.setAttribute('src', resolved);
+    });
+  }
+  function handleSceneImageError(img) {
+    const path = img.getAttribute('data-asset-path');
+    if (window.location.protocol === 'file:' && path && img.dataset.remoteRetried !== 'true') {
+      img.dataset.remoteRetried = 'true';
+      img.src = vrAssetUrl(path);
+      return;
+    }
+    img.style.display = 'none';
+    const fallback = document.getElementById('bgFallback');
+    if (fallback) fallback.style.display = 'block';
+  }
+</script>
+
+<script src="lib/tailwindcss.js"></script>
+
+
+
+
+<style>
+  html, body { font-family:"Work Sans","Noto Sans TC",ui-sans-serif,system-ui,sans-serif; }
+  .font-serif {
+    font-family:"Cormorant Garamond","Noto Serif TC","Songti TC","Source Han Serif TC",ui-serif,Georgia,serif !important;
+  }
+
+  @keyframes fade-up   { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes toast-in  { from{opacity:0;transform:translate(-50%,-10px)} to{opacity:1;transform:translate(-50%,0)} }
+  @keyframes lang-in   { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes cta-glow  {
+    0%,100% { box-shadow:0 0 0 0 rgba(251,191,36,.45), 0 10px 30px -10px rgba(251,191,36,.7); }
+    50%     { box-shadow:0 0 0 12px rgba(251,191,36,0), 0 14px 40px -8px rgba(251,191,36,.95); }
+  }
+  @keyframes panel-flash { 0%{background-color:rgba(251,191,36,0)} 25%{background-color:rgba(251,191,36,.07)} 100%{background-color:rgba(251,191,36,0)} }
+  @keyframes card-ping   { 0%{box-shadow:0 0 0 0 rgba(251,191,36,.55)} 100%{box-shadow:0 0 0 18px rgba(251,191,36,0)} }
+  @keyframes eq1 { 0%,100%{height:6px}  50%{height:16px} }
+  @keyframes eq2 { 0%,100%{height:14px} 50%{height:5px}  }
+  @keyframes eq3 { 0%,100%{height:9px}  50%{height:17px} }
+
+  .anim-in     { animation: fade-up 800ms cubic-bezier(.22,1,.36,1) both; }
+  .toast-in    { animation: toast-in 260ms cubic-bezier(.22,1,.36,1) both; }
+  @keyframes pop-in    { from{opacity:0;transform:translateY(-10px) scale(.98)} to{opacity:1;transform:none} }
+  .pop-in      { animation: pop-in 260ms cubic-bezier(.22,1,.36,1) both; }
+  .lang-fade   { animation: lang-in 420ms ease-out both; }
+  .cta-glow    { animation: cta-glow 2.8s ease-in-out infinite; }
+  .panel-flash { animation: panel-flash 900ms ease-out; }
+  .card-active { animation: card-ping 700ms ease-out; }
+  .d1{animation-delay:110ms}.d2{animation-delay:220ms}.d3{animation-delay:330ms}.d4{animation-delay:460ms}
+  .eq span:nth-child(1){animation:eq1 .9s ease-in-out infinite}
+  .eq span:nth-child(2){animation:eq2 .9s ease-in-out infinite .15s}
+  .eq span:nth-child(3){animation:eq3 .9s ease-in-out infinite .3s}
+
+  .gold-glow { filter: drop-shadow(0 0 4px rgba(251,191,36,.6)); }
+
+  .panel-h    { font-weight:700; color:#FCD34D; line-height:1.35; font-size:1.125rem; letter-spacing:-.01em; }
+  .panel-sub  { font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(253,230,138,.85); font-weight:500; }
+  .panel-body {
+    color:#E5E7EB; font-size:.875rem; line-height:1.85; letter-spacing:-.003em; word-spacing:-.03em;
+    text-align:justify; text-justify:inter-word;
+    hyphens:auto; -webkit-hyphens:auto; overflow-wrap:break-word; word-break:normal;
+  }
+  @media (min-width:768px) { .panel-h{font-size:1.25rem} .panel-body{font-size:1rem} }
+
+  .nav-btn {
+    width:100%; display:flex; align-items:center; justify-content:center; gap:.625rem;
+    border-radius:9999px; padding:.95rem 1.5rem;
+    font-weight:500; font-size:1rem; letter-spacing:.01em; transition:all .3s ease;
+  }
+  .nav-btn:active { transform:scale(.96); }
+  .nav-chev { width:1.05rem; height:1.05rem; flex:none; }
+
+  #bgFallback {
+    background-color:#0A1A2E;
+    background-image:
+      radial-gradient(circle at 18% 62%, rgba(255,176,84,.30) 0%, rgba(255,176,84,0) 26%),
+      radial-gradient(circle at 63% 55%, rgba(255,140,60,.42) 0%, rgba(255,140,60,0) 30%),
+      linear-gradient(to bottom,#071A33 0%,#123A63 34%,#3E6C8E 56%,#B4713F 64%,#123246 72%,#060E1A 100%);
+  }
+  #sidebar::-webkit-scrollbar { width:6px; }
+  #sidebar::-webkit-scrollbar-thumb { background:rgba(251,191,36,.35); border-radius:3px; }
+  #drag-canvas {
+    touch-action:pan-y;
+    width:120%;
+    left:-10%;
+  }
+  #drag-canvas.grabbing { cursor:grabbing; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .anim-in,.toast-in,.pop-in,.lang-fade,.cta-glow,.panel-flash,.card-active,.eq span { animation:none !important; }
+  }
+
+  .site-brand { white-space:nowrap; flex:0 0 auto; }
+  @media (max-width:767px) { .site-brand { display:none; } }
+  .nav-pill { white-space:nowrap; }
+  .nav-links { flex:1 1 auto; min-width:0; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none; justify-content:flex-end; }
+  .nav-links::-webkit-scrollbar { display:none; }
+  @media (max-width:1023px) { .nav-pill { padding:.3rem .6rem; font-size:.75rem; } }
+  @media (max-width:640px)  { .nav-pill { padding:.25rem .4rem; font-size:.63rem; } .nav-links { gap:.1rem; } }
+  @media (max-width:400px)  { .nav-pill { padding:.22rem .32rem; font-size:.58rem; } }
+  @media (max-width:640px)  { nav.fixed { padding-left:.4rem !important; padding-right:.4rem !important; gap:.25rem; } }
+</style>
+
+
+<style>
+  /* ── Top-bar pills ───────────────────────────────────────────
+     rest    : text only
+     hover   : a faint translucent pill fades in
+     press   : the pill fills solid and dips slightly
+     current : stays solid to mark the page you are on          */
+  .nav-pill {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0.375rem 1.25rem;
+    border-radius: 9999px;
+    color: #D1D5DB;
+    cursor: pointer;
+    background-color: transparent;
+    transition: background-color .3s ease, color .3s ease, transform .18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-pill.is-disabled { opacity:.4; cursor:not-allowed; }
+  .nav-pill:hover      { background-color: rgba(255,255,255,0.18); color: #ffffff; }
+  .nav-pill:active     { background-color: #ffffff; color: #000000; transform: scale(0.97); }
+  .nav-pill:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(251,191,36,.9);
+  }
+  .nav-pill.is-active  { background-color: #ffffff; color: #000000; font-weight: 500; }
+  .nav-pill.is-active:hover  { background-color: rgba(255,255,255,0.88); }
+  .nav-pill.is-active:active { transform: scale(0.97); }
+</style>
+<style> block into your <head> (or merge the keyframes
+     into an existing stylesheet).
+  2. Paste the markup just before </body>.
+  3. Call the two helpers:
+
+       showLoading('即將抵達 廟埕', 'Arriving at Temple Square');
+       hideLoading();
+
+     or navigate with the fade already handled:
+
+       goToScene('./p05.html', '即將抵達 廟埕', 'Arriving at Temple Square');
+
+  Requires: Tailwind (CDN is fine) and a `lang` variable holding
+  'zh' or 'en'. If you have no such variable the overlay still works —
+  it just shows both label spans until you wire the toggle up.
+-->
+
+<!-- ─────────────────────────── STYLES ─────────────────────────── -->
+<style>
+
+  @media (prefers-reduced-motion: reduce) {
+  }
+</style>
+<style id="justify-fix">
+  /* 段落左右對齊，最後一行靠左。中文依字元平均分散，避免只在空格處出現大空隙；英文加上自動斷字 */
+  .panel-body, .panel-body p { text-align: justify; text-align-last: left; word-spacing: normal !important; }
+  html[lang="zh-Hant"] .panel-body, html[lang="zh-Hant"] .panel-body p { text-justify: auto !important; }
+  html[lang="en"] .panel-body, html[lang="en"] .panel-body p { text-justify: inter-word; hyphens: auto; -webkit-hyphens: auto; }
+</style>
+</head>
+
+<body class="relative w-full h-screen overflow-hidden bg-black text-white">
+
+<audio id="bg-audio" src="media/leberch-zen-garden-587946.mp3" data-asset-path="media/leberch-zen-garden-587946.mp3" loop preload="none"></audio>
+<audio id="narration" preload="none"></audio>
+
+<!-- TOP NAV (Z-50) -->
+<nav class="absolute top-0 left-0 w-full z-50 bg-black/40 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-white/10"
+     style="padding-top:calc(1rem + env(safe-area-inset-top,0px));">
+
+  <a href="./index.html" class="site-brand text-white font-bold tracking-tight text-base md:text-lg hover:text-amber-300 transition">
+    高雄王爺信仰 <span class="text-amber-400">VR</span>
+  </a>
+
+  <div class="flex items-center gap-2 md:gap-5 min-w-0 flex-1 justify-end">
+    <!-- Navigation Links -->
+    <div class="nav-links flex items-center gap-1 md:gap-2">
+      <a href="index.html" class="nav-pill is-active"><span class="zh">首頁</span><span class="en" style="display:none;">Home</span></a>
+      <a href="p05.html" class="nav-pill"><span class="zh">廟埕場域</span><span class="en" style="display:none;">Temple Grounds</span></a>
+      <a href="p06.html" class="nav-pill"><span class="zh">正殿與王船</span><span class="en" style="display:none;">Main Hall & Boat</span></a>
+      <a href="p08.html" class="nav-pill"><span class="zh">祭典與遶境</span><span class="en" style="display:none;">Festival &amp; Parade</span></a>
+      <a href="p12.html" class="nav-pill"><span class="zh">學習成果</span><span class="en" style="display:none;">Learning Outcomes</span></a>
+    </div>
+
+    <div class="flex items-center rounded-full border border-white/20 bg-white/5 text-xs overflow-hidden">
+      <button id="btnZh" class="px-3 py-1.5 transition">中</button>
+      <span class="w-px h-4 bg-white/20"></span>
+      <button id="btnEn" class="px-3 py-1.5 transition">EN</button>
+    </div>
+
+    <div class="relative">
+      <button id="btnAudio" aria-label="音量 / Volume" aria-pressed="false"
+        class="relative h-9 w-9 flex items-center justify-center rounded-full border border-white/20 bg-white/5 hover:border-amber-300 transition active:scale-95">
+        <svg id="iconMuted" class="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m23 9-6 6M17 9l6 6"/>
+        </svg>
+        <svg id="iconSound" class="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+          <path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+        </svg>
+        <span id="audioDot" class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+      </button>
+
+      <div id="volPopup" class="hidden absolute right-0 top-12 w-60 rounded-2xl border border-white/15 bg-black/85 backdrop-blur-xl p-4 z-50"
+           style="box-shadow:0 8px 30px rgba(0,0,0,.55);">
+        <div class="flex items-center justify-between mb-3">
+          <p id="txtVolHead" class="text-sm text-white"></p>
+          <span id="volValue" class="text-xs text-amber-300">15%</span>
+        </div>
+        <input id="volSlider" type="range" min="0" max="100" value="15"
+               class="w-full accent-amber-400 cursor-pointer" aria-label="音量 / Volume" />
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- FULLSCREEN CANVAS (Z-10) -->
+<div id="viewport" class="absolute inset-0 w-full h-full z-10 overflow-hidden">
+
+  <div id="drag-canvas" class="absolute top-0 bottom-0 h-full cursor-grab">
+    <img id="bgImage" src="media/tutorial-bg2.jpg" data-asset-path="media/tutorial-bg2.jpg" alt=""
+         class="w-full h-full object-cover pointer-events-none bg-black" style="object-position:50% 30%;" draggable="false"
+         onerror="handleSceneImageError(this);" />
+    <div id="bgFallback" class="absolute inset-0 w-full h-full" style="display:none"></div>
+
+    <!-- HOTSPOTS — anchored to image pixels via data-px / data-py (fraction of the
+         background image), then positioned by layoutSpots() so the glow always sits
+         exactly on the object no matter the viewport or object-cover cropping. -->
+
+    <!-- 1 — hanging red lantern under the 代天府 temple gate -->
+    <div class="spotBtn absolute w-12 h-12 flex items-center justify-center cursor-pointer z-50 group"
+         data-px="0.537" data-py="0.524"
+         role="button" tabindex="0" aria-label="燈籠 / Lantern" onclick="openSuccessModal()">
+      <div class="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-75"></div>
+      <div class="relative w-6 h-6 bg-yellow-100 rounded-full group-hover:scale-110 transition-transform"
+           style="box-shadow:0 0 15px 10px rgba(251,191,36,0.9);"></div>
+    </div>
+
+    <!-- 2 — painted hull of the Wangye boat -->
+    <div class="spotBtn absolute w-12 h-12 flex items-center justify-center cursor-pointer z-50 group"
+         data-px="0.175" data-py="0.615"
+         role="button" tabindex="0" aria-label="王船 / Wangye Boat" onclick="openSuccessModal()">
+      <div class="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-75" style="animation-delay:.9s"></div>
+      <div class="relative w-6 h-6 bg-yellow-100 rounded-full group-hover:scale-110 transition-transform"
+           style="box-shadow:0 0 15px 10px rgba(251,191,36,0.9);"></div>
+    </div>
+
+    <!-- 3 — the lit stone lantern on the quay (drag RIGHT to find) -->
+    <div class="spotBtn absolute w-12 h-12 flex items-center justify-center cursor-pointer z-50 group"
+         data-px="0.079" data-py="0.826"
+         role="button" tabindex="0" aria-label="石燈籠 / Stone Lantern" onclick="openSuccessModal()">
+      <div class="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-75" style="animation-delay:1.4s"></div>
+      <div class="relative w-6 h-6 bg-yellow-100 rounded-full group-hover:scale-110 transition-transform"
+           style="box-shadow:0 0 15px 10px rgba(251,191,36,0.9);"></div>
+    </div>
+
+    <!-- 4 — the bronze censer beside the steps (drag LEFT to find) -->
+    <div class="spotBtn absolute w-12 h-12 flex items-center justify-center cursor-pointer z-50 group"
+         data-px="0.868" data-py="0.612"
+         role="button" tabindex="0" aria-label="香爐 / Incense Burner" onclick="openSuccessModal()">
+      <div class="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-75" style="animation-delay:2.1s"></div>
+      <div class="relative w-6 h-6 bg-yellow-100 rounded-full group-hover:scale-110 transition-transform"
+           style="box-shadow:0 0 15px 10px rgba(251,191,36,0.9);"></div>
+    </div>
+  </div>
+
+  <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35 pointer-events-none z-20"></div>
+
+  <div id="cardsWrap" class="absolute inset-0 z-30 pointer-events-none flex items-center justify-center px-8 pt-20 lg:pr-[430px] transition-all duration-300">
+    <div id="center-tooltips" class="transition-opacity duration-1000 opacity-100">
+      <div id="hotspotsFloat" class="hidden md:flex justify-center gap-4 pointer-events-auto"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FLOATING COLLAPSIBLE SIDEBAR (Z-40) -->
+<aside id="right-sidebar" class="absolute right-0 top-0 h-full w-[400px] max-w-[90%] bg-black/85 backdrop-blur-xl border-l border-white/20 z-40 transform transition-transform duration-300 translate-x-full flex flex-col pt-24 pb-40 px-8">
+
+  <button onclick="toggleSidebar()" aria-label="收合 / 展開側欄"
+    class="absolute left-[-40px] top-1/2 -translate-y-1/2 w-[40px] h-[60px] bg-black/85 backdrop-blur-xl border-y border-l border-white/20 rounded-l-lg flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors z-50">
+    <svg id="sidebar-icon" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+  </button>
+
+  <div class="overflow-y-auto h-full pr-2">
+    <div class="flex flex-col justify-between min-h-full">
+      <div class="space-y-7">
+        <header class="anim-in">
+          <h1 id="txtTitle" class="font-serif text-2xl font-bold text-amber-300 leading-tight"></h1>
+          <p id="txtTitleEn" class="panel-sub mt-1.5"></p>
+          <div class="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-white/20 to-transparent"></div>
+        </header>
+
+        <section class="md:hidden anim-in d1">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span id="icoTips"></span>
+            <div>
+              <h2 id="txtTipsHead" class="panel-h"></h2>
+              <p id="txtTipsHeadEn" class="panel-sub"></p>
+            </div>
+          </div>
+          <div id="hotspotsPanel" class="grid grid-cols-1 gap-2.5"></div>
+        </section>
+
+        <section class="anim-in d2 rounded-2xl border border-amber-400/30 bg-white/5 backdrop-blur-md p-5">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-2.5">
+              <span id="icoNarr"></span>
+              <div>
+                <h2 id="txtNarrHead" class="panel-h"></h2>
+                <p id="txtNarrHeadEn" class="panel-sub"></p>
+              </div>
+            </div>
+            <span id="narrEq" class="eq h-5 items-end gap-1 hidden">
+              <span class="w-1 rounded-full bg-yellow-300" style="height:6px"></span>
+              <span class="w-1 rounded-full bg-yellow-300" style="height:14px"></span>
+              <span class="w-1 rounded-full bg-yellow-300" style="height:9px"></span>
+            </span>
+          </div>
+
+          <button id="btnNarration"
+            class="w-full flex items-center justify-center gap-2.5 rounded-full border border-amber-400/60 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-200 px-5 py-2.5 text-sm transition active:scale-95 mb-5">
+            <svg id="narrPlay" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg>
+            <svg id="narrPause" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M7 4h4v16H7zM13 4h4v16h-4z"/></svg>
+            <span id="txtNarration"></span>
+          </button>
+
+          <p lang="en" id="txtNarrBody" class="panel-body lang-fade hyphens-auto break-words"></p>
+        </section>
+
+        <section class="anim-in d3 rounded-2xl border border-white/12 bg-white/5 backdrop-blur-md p-5">
+          <p lang="en" id="txtSafeBody" class="panel-body lang-fade hyphens-auto break-words"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</aside>
+
+<!-- SUCCESS MODAL (Z-50) -->
+<div id="successLayer" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-8">
+  <div id="successScrim" class="absolute inset-0 bg-black/65 backdrop-blur-sm"></div>
+  <div class="pop-in relative w-full max-w-lg rounded-2xl border border-amber-400/45 bg-black/85 backdrop-blur-xl p-6 sm:p-8 text-center"
+       style="box-shadow:0 0 44px rgba(245,158,11,0.22);">
+    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-amber-400/70"
+         style="box-shadow:0 0 24px rgba(251,191,36,.5);">
+      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h2 id="txtSuccessHead" class="panel-h"></h2>
+    <p id="txtSuccessHeadEn" class="panel-sub mt-1.5"></p>
+    <div class="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+    <p lang="en" id="txtSuccessBody" class="panel-body lang-fade hyphens-auto break-words mt-5" style="text-align:justify;text-align-last:center"></p>
+    <button id="btnSuccessClose" class="nav-btn mt-7 border border-amber-400/60 bg-yellow-400/10 text-yellow-200 hover:bg-yellow-400/20">
+      <span id="txtSuccessClose"></span>
+    </button>
+  </div>
+</div>
+
+<div id="toast" class="fixed left-1/2 top-24 z-[60] -translate-x-1/2 hidden px-4 w-full max-w-sm">
+  <div class="toast-in rounded-2xl border border-amber-400/30 bg-black/85 backdrop-blur-md px-4 py-2.5 text-center">
+    <p id="toastMain" class="text-sm text-white"></p>
+    <p id="toastSub" class="text-xs text-white/60 mt-0.5"></p>
+  </div>
+</div>
+
+<div id="ibBanner" class="hidden fixed inset-x-0 z-[60] px-4" style="top:calc(5.5rem + env(safe-area-inset-top,0px));">
+  <div class="mx-auto max-w-sm flex items-start gap-2.5 rounded-2xl border border-amber-400/30 bg-black/80 backdrop-blur-md px-3.5 py-2.5">
+    <svg class="w-4 h-4 shrink-0 mt-0.5 gold-glow" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round">
+      <path d="M12 8h.01M11 12h1v4h1"/><circle cx="12" cy="12" r="9"/>
+    </svg>
+    <p id="ibText" class="flex-1 text-[11px] leading-snug text-white/85"></p>
+    <button id="ibClose" aria-label="關閉 / Close" class="shrink-0 text-white/60 hover:text-amber-300 transition">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- OVERLAY BACKGROUND (Warm dark gradient) -->
+<div id="loading-overlay" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl transition-opacity duration-700 pointer-events-none">
+
+    <!-- 1. LANTERN ICON (Static or softly glowing) -->
+    <div class="relative mb-6">
+        <div class="w-12 h-16 rounded-3xl bg-gradient-to-b from-amber-300 to-amber-600 shadow-[0_0_30px_rgba(251,191,36,0.5)] border border-amber-200/50 flex items-center justify-center">
+            <div class="w-full h-[1px] bg-amber-900/30 absolute top-3"></div>
+            <div class="w-full h-[1px] bg-amber-900/30 absolute bottom-3"></div>
+        </div>
+        <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-2 bg-amber-800 rounded-t-sm"></div>
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-3 bg-amber-500/80"></div>
+    </div>
+
+    <!-- 2. PULSING TEXT SECTION (The breathing effect) -->
+    <div class="flex flex-col items-center animate-pulse">
+        <h2 id="loadingText" class="text-xl md:text-2xl text-amber-50/90 font-serif tracking-[0.2em] mb-3">
+            <span class="zh">即將抵達 廟埕</span>
+            <span class="en" style="display:none;">Arriving at Temple Square</span>
+        </h2>
+
+        <p class="text-xs text-amber-500/80 tracking-widest">
+            <span class="zh">高雄王爺信仰文化之旅</span>
+            <span class="en" style="display:none;">KAOHSIUNG WANGYE FAITH JOURNEY</span>
+        </p>
+    </div>
+</div>
+
+<!-- PERSISTENT BOTTOM RIGHT NAVIGATION (Z-50) -->
+<div class="fixed bottom-8 right-8 z-[60] flex flex-col-reverse sm:flex-row gap-4 items-end sm:items-center">
+  <!-- Secondary: Back to Home -->
+  <a id="btnBack" href="index.html"
+     class="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm font-medium hover:bg-white/10 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+    <span id="txtBack"></span>
+  </a>
+
+  <!-- Primary: Next Scene -->
+  <a id="btnStart" href="p03.html"
+     class="flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-amber-400 text-black text-sm font-bold hover:scale-105 transition-transform"
+     style="box-shadow:0 0 20px rgba(251,191,36,0.4);">
+    <span id="txtStart"></span>
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+  </a>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+/* ═══════════ gold line-art icons ═══════════ */
+const svg = (paths, size = 24) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#FBBF24"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="gold-glow">${paths}</svg>`;
+
+const ICONS = {
+  swipe:  svg('<path d="M4 12h11"/><path d="M8 8l-4 4 4 4"/><path d="M20 12h-3"/><path d="M17 8l3 4-3 4"/>'),
+  tap:    svg('<path d="M12 3v2.6M5.9 6l1.8 1.8M3.4 12H6M18.1 6l-1.8 1.8M20.6 12H18"/><path d="M12 10.4a1.9 1.9 0 0 1 1.9 1.9v2.8l3.2 1.5a1.9 1.9 0 0 1 1 2.4L17.4 21h-5.6l-3-3.9a1.5 1.5 0 0 1 2.2-1.9l1.1 1.1"/>'),
+  sound:  svg('<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>'),
+  screen: svg('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 5.5h3"/><path d="M9 10.5h6M9 14h4"/>'),
+  temple: svg('<path d="M3 10l9-6 9 6M5 10v10M19 10v10M9 20v-6h6v6"/><path d="M2 10c2-1 4-1 6 0M22 10c-2-1-4-1-6 0"/>')
+};
+const sized = (k, px) => ICONS[k].replace('width="24" height="24"', `width="${px}" height="${px}"`);
+
+$('icoTips').innerHTML    = ICONS.tap;
+$('icoNarr').innerHTML    = ICONS.sound;
+
+/* ═══════════ copy ═══════════ */
+const I18N = {
+  zh: {
+    title: '操作說明', titleEn: 'Mobile, Tablet & VR Controls',
+    tipsHead: '操作提示', tipsHeadEn: 'Controls',
+    narrHead: '語音導覽', narrHeadEn: 'Audio Narration',
+    narrBody: '在開始之前，請先找一個舒適、安全的位置。如果使用手機或平板，請滑動螢幕環顧四周，點擊發光圓點查看解說，並透過畫面上的按鈕切換場景。如果戴著 VR 頭盔，只要轉頭就能環顧四周；用控制器指向發光圓點並按下扳機即可查看解說，低頭就能看到切換場景的選單。使用 VR 時請留意身邊的空間，若感到頭暈或不適，請隨時暫停休息。準備好後，就讓我們一起展開這趟高雄王爺信仰文化之旅吧！',
+    successHead: '測試成功', successHeadEn: 'Success',
+    successBody: '太棒了！你已經學會點擊發光圓點。在接下來的導覽中，點擊這些發光圓點，就能看到每個地方的歷史與文化解說。準備好後，請點擊右下角的「下一步」按鈕。',
+    successClose: '關閉',
+    safe: '請坐著或站在安全、平穩的地方使用，避免邊走邊看。若感到不適，請先暫停休息。本體驗為觀察與導覽性質，不模擬任何祭祀行為。',
+    playNarration: '播放', pauseNarration: '暫停',
+    start: '下一步：文化觀察者', back: '返回首頁',
+    volHead: '音量控制',
+    audioOn: '環境音已開啟', audioOff: '環境音已關閉',
+    langNote: '介面語言：中文',
+    narrationTTS: '旁白音檔尚未放入資料夾，改用語音合成朗讀',
+    narrationNone: '此瀏覽器不支援語音朗讀，請改用預設瀏覽器開啟',
+    inApp: '建議點擊右上角 ⋯ 選用預設瀏覽器開啟，以獲得最佳音效體驗',
+    entering: '前往沿海廟埕…'
+  },
+  en: {
+    title: 'Mobile, Tablet & VR Controls', titleEn: '操作說明',
+    tipsHead: 'Controls', tipsHeadEn: '操作提示',
+    narrHead: 'Audio Narration', narrHeadEn: '語音導覽',
+    narrBody: "Before we begin, please find a comfortable and safe spot. On a phone or tablet, swipe to look around, tap the glowing dots to view information, and use the on-screen buttons to move between scenes. With a VR headset, simply turn your head to look around, point the controller at a glowing dot and pull the trigger to view information, and look down to find the menu for changing scenes. In VR, please stay aware of the space around you, and take a break whenever you feel dizzy or uncomfortable. When you are ready, let's begin the Kaohsiung Wangye Faith Journey together!",
+    successHead: 'Success', successHeadEn: '測試成功',
+    successBody: "Great job! You now know how to tap the glowing dots. In the tour ahead, tap them to see the history and culture of each place. When you are ready, tap the Next button at the bottom right.",
+    successClose: 'Close',
+    safe: 'For your safety, please stay seated or stand in a safe, stable place. Do not walk around during the experience. If you feel unwell, please stop and rest. This experience is for observation and guided learning only. No ritual acts are simulated.',
+    playNarration: 'Play', pauseNarration: 'Pause',
+    start: 'Next: Observer Guide', back: 'Back to Home',
+    volHead: 'Volume',
+    audioOn: 'Ambient sound on', audioOff: 'Ambient sound off',
+    langNote: 'Interface language: English',
+    narrationTTS: 'Narration file not found. Using the computer voice instead.',
+    narrationNone: 'This browser cannot play the narration. Please open this page in your default browser.',
+    inApp: 'For the best audio, tap ⋯ at the top right and open in your default browser',
+    entering: 'Entering the coastal temple square…'
+  }
+};
+
+const HOTSPOTS = [
+  { id:'look', icon:'swipe', zh:'拖曳 / 滑動觀看', en:'Drag / Swipe to Look Around',
+    tipZh:'按住畫面左右拖曳，就能環顧整個廟埕。', tipEn:'Hold and drag left or right to look around the temple square.' },
+  { id:'tap',  icon:'tap',   zh:'點擊發光圓點', en:'Tap Glowing Dots to View Information',
+    tipZh:'請在背景畫面中，尋找並點擊發光圓點。', tipEn:'Find and tap the glowing dots in the background.' }
+];
+
+const NARR_SRC  = { zh:'./narration-p02-zh.mp3', en:'./narration-p02-en.mp3' };
+const NARR_TEXT = { zh: I18N.zh.narrBody, en: I18N.en.narrBody };
+
+/* ═══════════ state ═══════════ */
+/* ── language preference, shared across every page ──────────
+   Read once at startup so a student who picks EN on the entry
+   page stays in EN for the whole journey. Wrapped in try/catch
+   because Safari private mode throws on localStorage access. */
+const LANG_KEY = 'preferred_lang';
+function loadLang() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return saved === 'en' ? 'en' : 'zh';
+  } catch (e) { return 'zh'; }
+}
+function saveLang(v) {
+  try { localStorage.setItem(LANG_KEY, v); } catch (e) {}
+}
+
+let lang = loadLang();
+let bgmOn = false;
+let narrating = false, ttsPaused = false, usingTTS = false;
+let audioUnlocked = false;
+let volume = 0.15;  /* subtle mood bed, under the narration */
+let toastTimer = null;
+
+const bgm = $('bg-audio');   /* the ambient bed */
+const narration = $('narration');
+applyVrAssetPaths();
+
+/* ═══════════ UI click sound ═══════════ */
+let sfxCtx = null;
+function getCtx() {
+  if (!sfxCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    sfxCtx = new Ctx();
+  }
+  if (sfxCtx.state === 'suspended') sfxCtx.resume();
+  return sfxCtx;
+}
+function playClickSound() {
+  if (volume === 0 || !audioUnlocked) return;
+  const ctx = getCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  const out = ctx.createGain(); out.gain.value = 0.16; out.connect(ctx.destination);
+
+  const body = ctx.createOscillator(); body.type = 'sine';
+  body.frequency.setValueAtTime(430, t);
+  body.frequency.exponentialRampToValueAtTime(268, t + 0.07);
+  const bg = ctx.createGain();
+  bg.gain.setValueAtTime(0.0001, t);
+  bg.gain.exponentialRampToValueAtTime(0.9, t + 0.006);
+  bg.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+  body.connect(bg).connect(out);
+
+  const ring = ctx.createOscillator(); ring.type = 'triangle';
+  ring.frequency.setValueAtTime(1290, t);
+  const rg = ctx.createGain();
+  rg.gain.setValueAtTime(0.0001, t);
+  rg.gain.exponentialRampToValueAtTime(0.28, t + 0.004);
+  rg.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);
+  ring.connect(rg).connect(out);
+
+  const len = Math.floor(ctx.sampleRate * 0.02);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const noise = ctx.createBufferSource(); noise.buffer = buf;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+  const ng = ctx.createGain(); ng.gain.value = 0.22;
+  noise.connect(lp).connect(ng).connect(out);
+
+  body.start(t); body.stop(t + 0.09);
+  ring.start(t); ring.stop(t + 0.06);
+  noise.start(t);
+}
+document.addEventListener('click', (e) => { if (e.target.closest('button')) playClickSound(); });
+
+/* ═══════════ mobile audio unlock ═══════════ */
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  if ('speechSynthesis' in window) {
+    try { const w = new SpeechSynthesisUtterance(' '); w.volume = 0; speechSynthesis.speak(w); speechSynthesis.cancel(); } catch (e) {}
+  }
+  try { getCtx(); } catch (e) {}
+
+  /* Browsers block autoplay with sound until a gesture, so the first tap
+     starts the ambience from the already-resolved CDN URL. */
+  if (bgm && volume > 0) {
+    bgm.volume = volume;
+    bgm.play().then(() => { bgmOn = true; setAudioIcon(); }).catch(() => {});
+  }
+  setAudioIcon();
+}
+window.addEventListener('pointerdown', unlockAudio, { once:true });
+window.addEventListener('touchstart', unlockAudio, { once:true });
+window.addEventListener('click', unlockAudio, { once:true });
+
+/* ═══════════ toast ═══════════ */
+/* Pass one string for text that is already in the active language, or
+   (zh, en) for a bilingual message — only the active one is displayed,
+   and the spans get picked up by applyLang if the user switches. */
+function showToast(zhOrText, en) {
+  const box = $('toastMain');
+  if (en === undefined) {
+    box.textContent = zhOrText;
+  } else {
+    box.innerHTML =
+      `<span class="zh"${lang === 'zh' ? '' : ' style="display:none;"'}>${zhOrText}</span>` +
+      `<span class="en"${lang === 'en' ? '' : ' style="display:none;"'}>${en}</span>`;
+  }
+  $('toastSub').textContent = '';
+  const el = $('toast');
+  el.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
+}
+
+/* ═══════════ ambient sound + volume popover ═══════════ */
+function setAudioIcon() {
+  const audible = bgmOn && volume > 0;
+  $('iconMuted').style.display = audible ? 'none' : 'block';
+  $('iconSound').style.display = audible ? 'block' : 'none';
+  $('btnAudio').setAttribute('aria-pressed', String(audible));
+  $('audioDot').style.display = audioUnlocked ? 'none' : 'block';
+}
+/* Slide the slider to 0 and the bed stops; move it up and it resumes.
+   No separate on/off button — the slider IS the control. */
+function applyVolume() {
+  bgm.volume = volume;
+  narration.volume = volume;
+  $('volValue').textContent = Math.round(volume * 100) + '%';
+  if (volume === 0) {
+    bgm.pause();
+    bgmOn = false;
+  } else if (bgm.paused && audioUnlocked) {
+    bgm.play().then(() => { bgmOn = true; setAudioIcon(); }).catch(() => {});
+  }
+  setAudioIcon();
+}
+function toggleVolPopup(force) {
+  const el = $('volPopup');
+  const show = force !== undefined ? force : el.classList.contains('hidden');
+  el.classList.toggle('hidden', !show);
+}
+$('btnAudio').addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); toggleVolPopup(); });
+$('volSlider').addEventListener('input', (e) => { unlockAudio(); volume = Number(e.target.value) / 100; applyVolume(); });
+document.addEventListener('click', (e) => {
+  if (!$('volPopup').classList.contains('hidden') &&
+      !e.target.closest('#volPopup') && !e.target.closest('#btnAudio')) toggleVolPopup(false);
+});
+
+/* ═══════════ narration: mp3 first, speech synthesis fallback ═══════════ */
+/* ===== 旁白播放（新版）=====
+   1. 直接播放音檔 narration-pXX-zh.mp3 / narration-pXX-en.mp3，不再預先「測試」檔案
+   2. 找不到音檔時：
+      - 裝置有對應語言的電腦語音（例如 Mac、Windows）→ 暫時用電腦語音朗讀
+      - 沒有（例如 Meta Quest 3）→ 顯示「旁白準備中」，網頁與 VR 裡都看得到
+   3. 播放狀態改變時，通知 VR 腳邊控制列更新「旁白」按鈕圖示 */
+const narrMissing = { zh:false, en:false };            // 已確認找不到音檔的語言
+const NARR_MSG = {
+  soon:    ['旁白準備中，敬請期待', 'Narration coming soon'],
+  tts:     ['旁白音檔準備中，暫時以電腦語音朗讀', 'Narration audio coming soon, using computer voice for now'],
+  blocked: ['請再按一次播放旁白', 'Please tap play again'],
+};
+
+let voices = [];
+function loadVoices() { voices = window.speechSynthesis ? (speechSynthesis.getVoices() || []) : []; }
+if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.addEventListener('voiceschanged', loadVoices); }
+/* 挑選電腦語音：中文優先台灣國語（美佳、Google 國語（臺灣）等），其次才是其他中文；
+   排除 macOS 內建的趣味／角色聲音（Eddy、Flo、Grandma…），避免念起來像外國口音 */
+const NOVELTY_VOICE = /eddy|flo\b|grandma|grandpa|reed|rocko|sandy|shelley|albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|ralph|fred|kathy/i;
+function pickVoice(prefix) {
+  const norm = (v) => (v.lang || '').replace('_', '-').toLowerCase();
+  const pool = voices.filter((v) => !NOVELTY_VOICE.test(v.name || ''));
+  const order = prefix === 'zh' ? ['zh-tw', 'zh-hant', 'cmn-tw', 'zh-cn', 'cmn', 'zh'] : ['en-us', 'en-gb', 'en'];
+  const prefer = prefix === 'zh'
+    ? /mei-?jia|美佳|hsiaochen|hsiaoyu|yunjhe|yating|hanhan|zhiwei|國語|臺灣|台灣|taiwan/i
+    : /google us english|samantha|aria|jenny|guy|ava|allison|daniel|karen|serena/i;
+  for (const tag of order) {
+    const list = pool.filter((v) => norm(v).startsWith(tag));
+    if (!list.length) continue;
+    return list.find((v) => prefer.test(v.name || '')) || list.find((v) => v.localService) || list[0];
+  }
+  return null;
+}
+function hasVoice(l) { loadVoices(); return 'speechSynthesis' in window && !!pickVoice(l === 'zh' ? 'zh' : 'en'); }
+
+function notifyVR() { if (window.__vrRefreshDock) window.__vrRefreshDock(); }
+function narrNotice(kind) {
+  const m = NARR_MSG[kind];
+  showToast(m[0], m[1]);
+  if (window.__vrToast) window.__vrToast(m[0], m[1]);
+}
+
+function setNarrationUI() {
+  $('narrPlay').style.display  = narrating ? 'none' : 'block';
+  $('narrPause').style.display = narrating ? 'block' : 'none';
+  $('narrEq').classList.toggle('hidden', !narrating);
+  $('narrEq').classList.toggle('flex', narrating);
+  $('txtNarration').textContent = narrating ? I18N[lang].pauseNarration : I18N[lang].playNarration;
+  notifyVR();
+}
+function speakNow() {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(NARR_TEXT[lang]);
+  u.lang = lang === 'zh' ? 'zh-TW' : 'en-US';
+  const v = pickVoice(lang === 'zh' ? 'zh' : 'en'); if (v) u.voice = v;
+  u.rate = 0.95;
+  u.onend   = () => { narrating = false; ttsPaused = false; usingTTS = false; setNarrationUI(); };
+  u.onerror = () => { narrating = false; usingTTS = false; setNarrationUI(); narrNotice('soon'); };
+  speechSynthesis.speak(u);
+  usingTTS = true; ttsPaused = false; narrating = true;
+  setNarrationUI();
+  narrNotice('tts');
+}
+function stopNarration() {
+  narration.pause();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  narrating = false; ttsPaused = false; usingTTS = false;
+  setNarrationUI();
+}
+function pauseNarration() {
+  if (usingTTS && 'speechSynthesis' in window) { speechSynthesis.pause(); ttsPaused = true; }
+  else narration.pause();
+  narrating = false; setNarrationUI();
+}
+/* 直接播放音檔：成功回傳 'ok'，找不到檔案回傳 'missing'，瀏覽器阻擋自動播放回傳 'blocked' */
+function playNarrationFile() {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (r) => { if (settled) return; settled = true; narration.removeEventListener('error', onErr); resolve(r); };
+    const onErr = () => finish('missing');
+    narration.addEventListener('error', onErr);
+    narration.src = NARR_SRC[lang];
+    narration.volume = volume;
+    const p = narration.play();
+    if (p && typeof p.then === 'function') {
+      p.then(() => finish('ok')).catch((e) => finish(e && e.name === 'NotAllowedError' ? 'blocked' : 'missing'));
+    }
+    setTimeout(() => finish(narration.paused ? 'missing' : 'ok'), 8000);
+  });
+}
+function fallbackNarration() {
+  if (hasVoice(lang)) speakNow();
+  else narrNotice('soon');
+}
+let narrBusy = false;
+function toggleNarration() {
+  unlockAudio();
+  if (narrating) { pauseNarration(); return; }
+  if (ttsPaused && 'speechSynthesis' in window) {
+    speechSynthesis.resume(); ttsPaused = false; narrating = true; setNarrationUI(); return;
+  }
+  const sameFile = (narration.src || '').indexOf(NARR_SRC[lang].replace('./', '')) !== -1;
+  if (!usingTTS && sameFile && narration.currentTime > 0 && !narration.ended) {   // 從暫停處繼續
+    narration.volume = volume;
+    narration.play().then(() => { narrating = true; setNarrationUI(); }).catch(() => {});
+    return;
+  }
+  if (narrMissing[lang]) { fallbackNarration(); return; }
+  if (narrBusy) return;
+  narrBusy = true; usingTTS = false;
+  playNarrationFile().then((r) => {
+    narrBusy = false;
+    if (r === 'ok') { narrating = true; setNarrationUI(); }
+    else if (r === 'blocked') narrNotice('blocked');
+    else { narrMissing[lang] = true; fallbackNarration(); }
+  });
+}
+$('btnNarration').addEventListener('click', toggleNarration);
+narration.addEventListener('ended', () => { narrating = false; setNarrationUI(); });
+
+/* ═══════════ success modal ═══════════ */
+function flashPanel() {
+  const el = $('right-sidebar');
+  el.classList.remove('panel-flash'); void el.offsetWidth; el.classList.add('panel-flash');
+}
+function openSuccess()  { flashPanel(); $('successLayer').classList.remove('hidden'); $('successLayer').classList.add('flex'); }
+function closeSuccess() { $('successLayer').classList.add('hidden'); $('successLayer').classList.remove('flex'); }
+window.openSuccessModal = function () { playClickSound(); openSuccess(); };
+$('btnSuccessClose').addEventListener('click', closeSuccess);
+$('successScrim').addEventListener('click', closeSuccess);
+document.querySelectorAll('.spotBtn').forEach(b => {
+  b.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.openSuccessModal(); }
+  });
+});
+
+/* ═══════════ tutorial cards ═══════════ */
+function hotspotHTML(h, compact) {
+  const title = lang === 'zh' ? h.zh : h.en;
+  const alt   = lang === 'zh' ? h.en : h.zh;
+  return `<button data-hotspot="${h.id}"
+      class="relative flex items-start gap-3 rounded-2xl border border-amber-400/60 bg-black/45 backdrop-blur-md
+             ${compact ? 'px-3 py-3' : 'px-4 py-3.5 max-w-xs'} text-left transition duration-300
+             hover:scale-105 hover:border-amber-300 hover:bg-black/60 active:scale-95"
+      style="box-shadow:0 0 15px rgba(245,158,11,0.2), inset 0 0 0 1px rgba(251,191,36,0.14);">
+      <span class="shrink-0 mt-0.5">${sized(h.icon, compact ? 20 : 24)}</span>
+      <span class="min-w-0">
+        <span class="block ${compact ? 'text-xs' : 'text-sm'} font-medium text-white leading-snug">${title}</span>
+        <span class="block text-[10px] uppercase tracking-wider text-amber-200/85 mt-0.5 leading-snug">${alt}</span>
+      </span>
+    </button>`;
+}
+function renderHotspots() {
+  $('hotspotsFloat').innerHTML = HOTSPOTS.map(h => hotspotHTML(h, false)).join('');
+  $('hotspotsPanel').innerHTML = HOTSPOTS.map(h => hotspotHTML(h, true)).join('');
+  document.querySelectorAll('[data-hotspot]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const h = HOTSPOTS.find(x => x.id === btn.dataset.hotspot);
+      btn.classList.remove('card-active'); void btn.offsetWidth; btn.classList.add('card-active');
+      showToast(h.tipZh, h.tipEn);
+    });
+  });
+}
+
+/* ═══════════ collapsible off-canvas sidebar ═══════════ */
+/* The sidebar slides OVER the canvas — #viewport is absolute inset-0 and
+   never resizes, so the artwork stays fullscreen whether it is open or
+   closed. Only the floating UI shifts, so nothing hides behind it. */
+let panelOpen = window.innerWidth >= 1024;
+
+const CHEV_RIGHT = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>';
+const CHEV_LEFT  = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>';
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('right-sidebar');
+  const icon = document.getElementById('sidebar-icon');
+
+  sidebar.classList.toggle('translate-x-full');
+  sidebar.classList.toggle('translate-x-0');
+
+  const collapsed = sidebar.classList.contains('translate-x-full');
+  icon.innerHTML = collapsed ? CHEV_LEFT : CHEV_RIGHT;
+
+  /* the floating UI only steps aside while the sidebar is open */
+  $('cardsWrap').classList.toggle('lg:pr-[430px]', !collapsed);
+}
+window.toggleSidebar = toggleSidebar;
+
+/* ── auto-reveal the guide shortly after arrival ──────────────
+   The sidebar starts closed so the scene lands first, but a student
+   who never opens it would miss the narration and the safety notice.
+   After 1.5s it slides itself in — unless they have already touched
+   the handle, in which case their choice wins. */
+let sidebarTouched = false;
+/* every control that opens the sidebar carries onclick="toggleSidebar()",
+   so this covers the edge handle and the 操作說明 pill without relying
+   on an id that may not exist. */
+document.querySelectorAll('[onclick="toggleSidebar()"]').forEach(el =>
+  el.addEventListener('click', () => { sidebarTouched = true; }));
+
+setTimeout(() => {
+  const bar = document.getElementById('right-sidebar');
+  if (!bar || sidebarTouched) return;
+  if (bar.classList.contains('translate-x-full')) toggleSidebar();
+}, 2800);   /* after the loading screen has fully faded (1800 + 700) */
+
+/* Closed on arrival at every size, so the scene is the first thing seen.
+   The cards and role tag start centred to match. */
+function applyPanelState() {
+  $('cardsWrap').classList.remove('lg:pr-[430px]');
+}
+
+/* ═══════════ drag to pan ═══════════ */
+/* Keep real image overflow on both sides and derive the pan limit from that
+   overflow. The small safety inset prevents sub-pixel gaps at either edge. */
+const viewport   = $('viewport');
+const dragCanvas = $('drag-canvas');
+let dragX = 0, dragging = false, startX = 0, startY = 0, startDragX = 0, axisLocked = null;
+
+function maxPan() {
+  return Math.max(0, (dragCanvas.clientWidth - viewport.clientWidth) / 2 - 4);
+}
+function renderLayer() {
+  const x = Math.max(-maxPan(), Math.min(maxPan(), dragX));
+  dragX = x;
+  dragCanvas.style.transform = `translate3d(${x}px,0,0)`;
+}
+function pointFrom(e) { const p = e.touches ? e.touches[0] : e; return { x:p.clientX, y:p.clientY }; }
+function dragStart(e) {
+  if (e.target.closest('button') || e.target.closest('[role="button"]')) return;
+  const p = pointFrom(e);
+  dragging = true; axisLocked = null;
+  startX = p.x; startY = p.y; startDragX = dragX;
+  dragCanvas.classList.add('grabbing');
+}
+function dragMove(e) {
+  if (!dragging) return;
+  const p = pointFrom(e);
+  const dx = p.x - startX, dy = p.y - startY;
+  if (e.touches && axisLocked === null) {
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    axisLocked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+  }
+  if (axisLocked === 'y') return;
+  if (e.cancelable && e.touches) e.preventDefault();
+  dragX = startDragX + dx;
+  renderLayer();
+}
+function dragEnd() {
+  if (!dragging) return;
+  dragging = false; axisLocked = null;
+  dragX = Math.max(-maxPan(), Math.min(maxPan(), dragX));
+  dragCanvas.classList.remove('grabbing');
+}
+dragCanvas.addEventListener('mousedown', dragStart);
+window.addEventListener('mousemove', dragMove);
+window.addEventListener('mouseup', dragEnd);
+viewport.addEventListener('mouseleave', dragEnd);
+dragCanvas.addEventListener('touchstart', dragStart, { passive:true });
+dragCanvas.addEventListener('touchmove', dragMove, { passive:false });
+dragCanvas.addEventListener('touchend', dragEnd);
+dragCanvas.addEventListener('dragstart', (e) => e.preventDefault());
+window.addEventListener('resize', renderLayer);
+
+/* ═══════════ hotspot anchoring ═══════════ */
+/* The background is rendered with object-cover / object-center inside a
+   canvas that matches the viewport, so a plain top/left percentage drifts off
+   the object as the window changes. layoutSpots() re-derives the real painted
+   image box and places each dot on its exact data-px / data-py image pixel. */
+function layoutSpots() {
+  const img = $('bgImage');
+  if (!img || !img.naturalWidth) return;
+  const cw = dragCanvas.clientWidth, ch = dragCanvas.clientHeight;
+  const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+  const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+  const offX = (cw - dw) / 2;      /* object-position: center horizontally */
+  const offY = (ch - dh) * 0.30;   /* object-position: 30% vertically      */
+  document.querySelectorAll('.spotBtn[data-px]').forEach((el) => {
+    const px = parseFloat(el.dataset.px), py = parseFloat(el.dataset.py);
+    el.style.left = (offX + px * dw) + 'px';
+    el.style.top  = (offY + py * dh) + 'px';
+    el.style.right = 'auto';
+    el.style.transform = 'translate(-50%, -50%)';
+  });
+}
+if ($('bgImage').complete) layoutSpots();
+$('bgImage').addEventListener('load', layoutSpots);
+window.addEventListener('resize', layoutSpots);
+window.addEventListener('orientationchange', () => setTimeout(layoutSpots, 250));
+
+
+/* ═══════════ in-app browser notice ═══════════ */
+const UA = navigator.userAgent || '';
+const IN_APP = /\bLine\//i.test(UA) || /MicroMessenger/i.test(UA) || /FBAN|FBAV|FB_IAB/i.test(UA) || /Instagram/i.test(UA);
+let ibDismissed = false;
+function updateBanner() {
+  $('ibText').textContent = I18N[lang].inApp;
+  $('ibBanner').classList.toggle('hidden', !IN_APP || ibDismissed);
+}
+$('ibClose').addEventListener('click', () => { ibDismissed = true; updateBanner(); });
+
+/* ═══════════ navigation ═══════════ */
+const DESTINATIONS = {
+  'p05.html': ['即將抵達 廟埕', 'Arriving at Temple Square'],
+  'p03.html': ['即將抵達 文化觀察者', 'Arriving at Cultural Observer'],
+  'p02.html': ['即將抵達 操作說明', 'Arriving at Setup & Controls'],
+  'index.html': ['返回首頁', 'Returning to Home']
+};
+
+/* ═══════════ cultural loading overlay ═══════════ */
+function showLoading(zh, en) {
+  const el = $('loading-overlay');
+  if (!el) return;
+  if (zh || en) {
+    $('loadingText').innerHTML =
+      `<span class="zh"${lang === 'zh' ? '' : ' style="display:none;"'}>${zh || ''}</span>` +
+      `<span class="en"${lang === 'en' ? '' : ' style="display:none;"'}>${en || ''}</span>`;
+  }
+  el.classList.remove('opacity-0', 'pointer-events-none');
+  el.setAttribute('aria-hidden', 'false');
+}
+function hideLoading() {
+  const el = $('loading-overlay');
+  if (!el) return;
+  el.classList.add('opacity-0');
+  el.setAttribute('aria-hidden', 'true');
+  setTimeout(() => el.classList.add('pointer-events-none'), 700);
+}
+
+function goTo(url) {
+  stopNarration();
+  const key = Object.keys(DESTINATIONS).find(k => url.includes(k));
+  const d = key ? DESTINATIONS[key] : ['', ''];
+  showLoading(d[0], d[1]);
+  setTimeout(() => { window.location.href = url; }, 350);   /* let the transition be seen */
+}
+/* the hrefs work on their own; these handlers just add the fade and
+   stop the narration before leaving */
+$('btnStart').addEventListener('click', (e) => { e.preventDefault(); goTo('./p03.html'); });
+$('btnBack').addEventListener('click',  (e) => { e.preventDefault(); goTo('./index.html'); });
+
+/* ═══════════ language ═══════════ */
+function setLang(next) {
+  stopNarration();
+  lang = next;
+  saveLang(next);                 /* carried to the next page */
+  applyLang();
+  showToast(I18N[next].langNote);
+}
+$('btnZh').addEventListener('click', () => setLang('zh'));
+$('btnEn').addEventListener('click', () => setLang('en'));
+
+function applyLang() {
+  const L = I18N[lang];
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+
+  /* every .zh / .en pair on the page. lang is guaranteed 'zh' or 'en'
+     by loadLang(), so one of the two is always visible. */
+  document.querySelectorAll('.zh').forEach(el => { el.style.display = lang === 'zh' ? '' : 'none'; });
+  document.querySelectorAll('.en').forEach(el => { el.style.display = lang === 'en' ? '' : 'none'; });
+
+  $('txtTitle').textContent         = L.title;
+  $('txtTitleEn').textContent       = L.titleEn;
+  $('txtTipsHead').textContent      = L.tipsHead;
+  $('txtTipsHeadEn').textContent    = L.tipsHeadEn;
+  $('txtNarrHead').textContent      = L.narrHead;
+  $('txtNarrHeadEn').textContent    = L.narrHeadEn;
+  $('txtNarrBody').textContent      = L.narrBody;
+  $('txtSuccessHead').textContent   = L.successHead;
+  $('txtSuccessHeadEn').textContent = L.successHeadEn;
+  $('txtSuccessBody').textContent   = L.successBody;
+  $('txtSuccessClose').textContent  = L.successClose;
+  $('txtSafeBody').textContent      = L.safe;
+  $('txtStart').textContent         = L.start;
+  $('txtBack').textContent          = L.back;
+  $('txtVolHead').textContent       = L.volHead;
+
+  $('btnZh').className = 'px-3 py-1.5 transition ' + (lang === 'zh' ? 'bg-yellow-400 text-black font-semibold' : 'text-white/75 hover:bg-white/10');
+  $('btnEn').className = 'px-3 py-1.5 transition ' + (lang === 'en' ? 'bg-yellow-400 text-black font-semibold' : 'text-white/75 hover:bg-white/10');
+
+  document.querySelectorAll('.lang-fade').forEach(el => {
+    el.classList.remove('lang-fade'); void el.offsetWidth; el.classList.add('lang-fade');
+  });
+
+  setNarrationUI();
+  setAudioIcon();
+  renderHotspots();
+  updateBanner();
+}
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSuccess(); });
+
+applyLang();
+applyPanelState();
+setAudioIcon();
+applyVolume();
+renderLayer();
+
+/* ── arrival sequence ─────────────────────────────────────────
+   The overlay already covers the page (no opacity-0 in its markup),
+   so the scene never flashes in half-built. Hold it long enough to
+   read, then fade. Runs after applyLang so the label is in the
+   language the student chose on the previous page. */
+showLoading('即將抵達 操作說明', 'Arriving at Setup & Controls');
+setTimeout(hideLoading, 1800);
+
+/* Page timeline
+     0ms     loading overlay covers the scene
+   1800ms    overlay begins its 700ms fade
+   2800ms    guidance sidebar slides in
+  60000ms    the center tutorial cards fade away, leaving a clear view */
+setTimeout(() => {
+  const centerTooltips = document.getElementById('center-tooltips');
+  if (centerTooltips) {
+    centerTooltips.classList.remove('opacity-100');
+    centerTooltips.classList.add('opacity-0', 'pointer-events-none');
+  }
+}, 60000);
+
+/* ═══════════ ambient bed ═══════════
+   Try to play at once; if the browser blocks it, start on the first
+   click or touch. The element is the same one the volume slider and
+   the mute icon control, so there is only ever one ambient track. */
+const bgAudio = document.getElementById('bg-audio');
+if (bgAudio) {
+    bgAudio.volume = 0.15;
+
+    let playPromise = bgAudio.play();
+
+    if (playPromise !== undefined) {
+        playPromise
+            .then(() => { bgmOn = true; setAudioIcon(); })
+            .catch(error => {
+                console.log("Autoplay prevented by browser. Waiting for user interaction.");
+                const startAudio = () => {
+                    bgAudio.play().then(() => { bgmOn = true; setAudioIcon(); }).catch(() => {});
+                    document.removeEventListener('click', startAudio);
+                    document.removeEventListener('touchstart', startAudio);
+                };
+                document.addEventListener('click', startAudio);
+                document.addEventListener('touchstart', startAudio);
+            });
+    }
+}
+</script>
+
+<script id="prefetch-assets">
+/* 頁面載入完成後，趁閒置時預先下載下一頁與本頁 3D 模型，讓換頁與開啟模型更快 */
+(function () {
+  if (location.protocol === 'file:') return;
+  const ASSETS = ['p03.html'];
+  const run = () => ASSETS.forEach((href) => {
+    const l = document.createElement('link');
+    l.rel = 'prefetch'; l.href = href;
+    if (/\.glb$/.test(href)) l.as = 'fetch', l.crossOrigin = 'anonymous';
+    document.head.appendChild(l);
+  });
+  const later = () => (window.requestIdleCallback ? requestIdleCallback(run, { timeout: 4000 }) : setTimeout(run, 2000));
+  if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+})();
+</script>
+<script id="audio-and-hyphen-fix">
+/* 1. 旁白固定以最大音量播放；播放旁白時，背景音樂自動降到原本的 35%，旁白結束後恢復。
+      音量滑桿只調整背景音樂。
+   2. 英文段落左右對齊時，替很長的專有名詞加上「可斷行位置」，避免行內出現大空隙。 */
+(function () {
+  var n = document.getElementById('narration');
+  var b = document.getElementById('bg-audio');
+  var P = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'volume');
+  if (n && b && P) {
+    var DUCK = 0.35, ducked = false, want = P.get.call(b);
+    var applyBg = function () { P.set.call(b, Math.min(1, want * (ducked ? DUCK : 1))); };
+    Object.defineProperty(b, 'volume', { configurable: true,
+      get: function () { return want; },
+      set: function (v) { want = v; applyBg(); } });
+    Object.defineProperty(n, 'volume', { configurable: true,
+      get: function () { return P.get.call(n); },
+      set: function () { P.set.call(n, 1); } });
+    P.set.call(n, 1);
+    var duck = function () { ducked = true; applyBg(); };
+    var undo = function () { ducked = false; applyBg(); };
+    n.addEventListener('play', duck);
+    n.addEventListener('pause', undo);
+    n.addEventListener('ended', undo);
+  }
+
+  var SHY = '­';
+  var MAP = [
+    [/Guanjiangshou/g, 'Guan' + SHY + 'jiang' + SHY + 'shou'],
+    [/Kaohsiung/g, 'Kaoh' + SHY + 'siung'],
+    [/Wangye/g, 'Wang' + SHY + 'ye'],
+    [/Daitian/g, 'Dai' + SHY + 'tian'],
+    [/palanquin/g, 'pal' + SHY + 'an' + SHY + 'quin'],
+    [/Congratulations/g, 'Con' + SHY + 'grat' + SHY + 'u' + SHY + 'la' + SHY + 'tions'],
+    [/craftspeople/g, 'crafts' + SHY + 'peo' + SHY + 'ple'],
+    [/craftsmanship/g, 'crafts' + SHY + 'man' + SHY + 'ship'],
+    [/woodworking/g, 'wood' + SHY + 'work' + SHY + 'ing'],
+    [/procession/g, 'pro' + SHY + 'ces' + SHY + 'sion'],
+    [/participation/g, 'par' + SHY + 'tic' + SHY + 'i' + SHY + 'pa' + SHY + 'tion'],
+    [/performers/g, 'per' + SHY + 'form' + SHY + 'ers']
+  ];
+  var fixNode = function (root) {
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), t;
+    while ((t = w.nextNode())) {
+      var s = t.nodeValue, o = s;
+      if (!/[A-Za-z]{7}/.test(s)) continue;
+      for (var i = 0; i < MAP.length; i++) o = o.replace(MAP[i][0], MAP[i][1]);
+      if (o !== s) t.nodeValue = o;
+    }
+  };
+  var queued = false;
+  var run = function () {
+    queued = false;
+    document.querySelectorAll('.panel-body, #modalAbout p.en').forEach(fixNode);
+  };
+  new MutationObserver(function () {
+    if (!queued) { queued = true; requestAnimationFrame(run); }
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  run();
+})();
+</script>
+<style id="mobile-layout-css">
+/* ===== 手機專用排版：只有在手機（直拿寬度 < 768，或橫拿高度 ≤ 500）時才會套用，電腦與 Quest 3 不受影響 ===== */
+.m-menu-btn, .m-tab-label, .m-vr-note { display: none; }
+html.m-mobile { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html.m-mobile body.h-screen { height: 100vh; height: 100dvh; }
+
+/* 1. 頂部導覽列：分頁收進「☰」選單，左側顯示網站名稱 */
+html.m-mobile nav .site-brand { display: inline !important; font-size: 15px !important; }
+html.m-mobile nav { padding-left: 14px !important; padding-right: 12px !important;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px)) !important; padding-bottom: 10px !important; }
+html.m-mobile nav .nav-links { display: none !important; position: absolute; top: calc(100% + 6px); right: 10px;
+  flex-direction: column; align-items: stretch; gap: 4px !important; min-width: 190px; padding: 8px;
+  border-radius: 18px; border: 1px solid rgba(251,191,36,.35); background: rgba(8,6,4,.94);
+  box-shadow: 0 12px 34px rgba(0,0,0,.6); z-index: 80; }
+html.m-mobile nav .nav-links.m-open { display: flex !important; }
+html.m-mobile nav .nav-links .nav-pill { font-size: 15px !important; padding: 11px 16px !important; text-align: left; border-radius: 12px; }
+html.m-mobile .m-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 36px;
+  border-radius: 9999px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: #fff; flex: 0 0 auto; }
+html.m-mobile .m-menu-btn[aria-expanded="true"] { border-color: #FBBF24; color: #FBBF24; }
+
+/* 2. 右側解說欄：手機上預設收起，側邊拉桿加上「解說」字樣 */
+html.m-mobile #right-sidebar { width: 88% !important; max-width: 420px !important;
+  padding: calc(66px + env(safe-area-inset-top, 0px)) 18px calc(118px + env(safe-area-inset-bottom, 0px)) 18px !important; }
+html.m-mobile #right-sidebar > button[aria-label] { width: 42px !important; height: 92px !important; left: -42px !important;
+  flex-direction: column; gap: 4px; border-color: rgba(251,191,36,.55) !important; }
+html.m-mobile .m-tab-label { display: block; writing-mode: vertical-rl; font-size: 12px; letter-spacing: .2em; color: #FCD34D; line-height: 1; }
+html.m-land #right-sidebar { width: 58% !important; padding-top: 58px !important; padding-bottom: 70px !important; }
+html.m-land #right-sidebar > button[aria-label] { height: 76px !important; }
+
+/* 3. 右下角「返回／下一站」按鈕：縮小、避開 iPhone 底部橫條 */
+html.m-mobile .m-bottom-nav { right: 12px !important; bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important; gap: 8px !important; }
+html.m-mobile .m-bottom-nav > a, html.m-mobile .m-bottom-nav > button { padding: 9px 16px !important; font-size: 13px !important; }
+html.m-land .m-bottom-nav { bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; }
+
+/* 4. 閱讀頁（p02–p04）內容區：避開上方導覽列與下方按鈕 */
+html.m-land #content { padding-top: 60px !important; padding-bottom: 64px !important; }
+html.m-por #content { padding-top: 72px !important; padding-bottom: 124px !important; }
+
+/* 5. 首頁大標題：橫拿時依螢幕高度縮小 */
+html.m-land .m-hero { top: 58px !important; }
+html.m-land .m-hero h2 { font-size: 13px !important; margin-bottom: 2px !important; }
+html.m-land .m-hero h1 { font-size: 40px !important; line-height: 1.12 !important; margin-bottom: 6px !important; }
+html.m-land .m-hero h1 br { display: none; }
+html.m-land .m-hero > div { margin-bottom: 6px !important; }
+html.m-land .m-hero > p { font-size: 9.5px !important; letter-spacing: .22em !important; }
+html.m-land .m-home-actions { bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important; }
+html.m-land .m-home-actions button { padding: 9px 20px !important; font-size: 14px !important; }
+
+/* 6. 學習成果頁卡片：橫拿時縮小，不壓到標題與按鈕 */
+html.m-land .m-scene-title { top: 58px !important; }
+html.m-land .m-scene-title h1 { font-size: 20px !important; }
+html.m-land .m-card-wrap { padding-top: 118px; padding-bottom: 58px; }
+html.m-mobile #center-tooltips { padding-left: 16px !important; padding-right: 58px !important; }
+html.m-land .m-card { max-width: 470px !important; padding: 14px 22px !important; }
+html.m-land .m-card h2 { font-size: 17px !important; margin-top: 4px !important; }
+html.m-land .m-card #txtDoneBody { font-size: 12.5px !important; margin-top: 6px !important; }
+html.m-land .m-card button { margin-top: 10px !important; padding-top: 9px !important; padding-bottom: 9px !important; }
+
+/* 7. 手機無法進入 VR：把「VR NOT SUPPORTED / WEBXR NOT AVAILABLE」換成清楚的中英文說明 */
+html.m-mobile .m-vr-hidden { display: none !important; }
+html.m-mobile .m-vr-note { display: inline-flex; align-items: center; gap: 6px; position: fixed; z-index: 59;
+  left: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); max-width: 42%;
+  padding: 7px 12px; border-radius: 9999px; border: 1px solid rgba(251,191,36,.45); background: rgba(0,0,0,.6);
+  color: #FDE68A; font-size: 11px; line-height: 1.25; pointer-events: none; }
+</style>
+<script id="mobile-layout-js">
+(function () {
+  var html = document.documentElement;
+  var Q = window.matchMedia('(max-width: 767px), (max-height: 500px) and (orientation: landscape)');
+  var LAND = window.matchMedia('(orientation: landscape)');
+  var lang = function () { try { return localStorage.getItem('preferred_lang') === 'en' ? 'en' : 'zh'; } catch (e) { return 'zh'; } };
+  var mk = function (tag, cls, zh, en) {
+    var el = document.createElement(tag); el.className = cls;
+    el.innerHTML = '<span class="zh">' + zh + '</span><span class="en">' + en + '</span>';
+    var L = lang(); el.querySelector(L === 'en' ? '.zh' : '.en').style.display = 'none';
+    return el;
+  };
+  function apply() {
+    var m = Q.matches;
+    html.classList.toggle('m-mobile', m);
+    html.classList.toggle('m-land', m && LAND.matches);
+    html.classList.toggle('m-por', m && !LAND.matches);
+    if (!m) closeMenu();
+  }
+
+  /* ☰ 選單 */
+  var links = document.querySelector('nav .nav-links'), menuBtn = null;
+  function closeMenu() { if (links) links.classList.remove('m-open'); if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false'); }
+  if (links) {
+    menuBtn = document.createElement('button');
+    menuBtn.type = 'button'; menuBtn.className = 'm-menu-btn';
+    menuBtn.setAttribute('aria-label', '選單 / Menu'); menuBtn.setAttribute('aria-expanded', 'false');
+    menuBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+    links.parentNode.insertBefore(menuBtn, links.nextSibling);
+    menuBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = !links.classList.contains('m-open');
+      links.classList.toggle('m-open', open); menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function (e) { if (!links.contains(e.target)) closeMenu(); });
+  }
+
+  /* 右下角按鈕、首頁標題、學習成果卡片：加上標記，讓上面的手機排版找得到 */
+  var back = document.getElementById('btnBack') || document.getElementById('btnNext');
+  if (back && back.parentElement && /fixed/.test(back.parentElement.className)) back.parentElement.classList.add('m-bottom-nav');
+  var hero = document.querySelector('[class*="top-[9%]"]');
+  if (hero) hero.classList.add('m-hero');
+  var start = document.getElementById('btnStart');
+  if (start && start.parentElement) start.parentElement.classList.add('m-home-actions');
+  var st = document.getElementById('txtSceneTitle');
+  if (st && document.getElementById('btnOpenCard')) {
+    st.parentElement.classList.add('m-scene-title');
+    var card = document.getElementById('btnOpenCard').closest('.max-w-2xl');
+    if (card) { card.classList.add('m-card'); card.parentElement.classList.add('m-card-wrap'); }
+  }
+
+  /* 解說欄拉桿加上文字；手機上不要自動展開解說欄 */
+  var tab = document.querySelector('#right-sidebar > button[aria-label]');
+  if (tab) tab.appendChild(mk('span', 'm-tab-label', '解說', 'Guide'));
+
+  apply();
+  if (Q.addEventListener) { Q.addEventListener('change', apply); LAND.addEventListener('change', apply); }
+  else { Q.addListener(apply); LAND.addListener(apply); }
+  if (Q.matches) { try { sidebarTouched = true; } catch (e) {} }
+
+  /* 手機不支援 VR 時，換成中英文說明 */
+  var note = null;
+  function checkVR() {
+    var cands = document.querySelectorAll('#VRButton, body > a');
+    for (var i = 0; i < cands.length; i++) {
+      var t = (cands[i].textContent || '').toUpperCase();
+      if (/VR NOT SUPPORTED|WEBXR NOT AVAILABLE|WEBXR NEEDS HTTPS|VR NOT ALLOWED/.test(t)) {
+        cands[i].classList.add('m-vr-hidden');
+        if (!note) { note = mk('div', 'm-vr-note', 'VR 模式請使用頭戴裝置體驗', 'VR mode needs a headset'); document.body.appendChild(note); }
+      }
+    }
+  }
+  checkVR();
+  new MutationObserver(checkVR).observe(document.body, { childList: true, subtree: true, characterData: true });
+})();
+</script>
+<style id="mobile-fix-2-css">
+/* 手機上鎖住整個頁面，不讓網頁被左右或上下拖動、縮小 */
+html.m-mobile, html.m-mobile body { overflow: hidden !important; overscroll-behavior: none; }
+html.m-mobile body { position: fixed !important; top: 0; right: 0; bottom: 0; left: 0; width: 100% !important; height: 100% !important; }
+/* 學習成果頁：文化導覽卡在手機直拿時改成上下排列 */
+html.m-por #guideCard .gc-content > .flex.items-start { flex-direction: column; align-items: stretch; gap: 10px; }
+html.m-por #guideCard #cardIcon { width: 8.5rem !important; max-width: 46vw !important; margin: 0 auto; }
+html.m-por #guideCard .gc-row { flex-direction: column; gap: 0; line-height: 1.6; }
+html.m-por #guideCard .gc-key { min-width: 0; font-size: .78rem; }
+html.m-por #guideCard .gc-val { overflow-wrap: anywhere; }
+html.m-por #guideCard .seal-wrap { width: 6.5rem; height: 6.5rem; }
+html.m-mobile #txtBannerZh { letter-spacing: .04em !important; }
+/* 換頁時的「即將抵達…」：置中、正常字距 */
+html.m-mobile #loadingText { text-align: center !important; letter-spacing: .06em !important; line-height: 1.4 !important;
+  font-size: 20px !important; padding: 0 28px; max-width: 100vw; box-sizing: border-box; }
+html.m-mobile #loading-overlay p { text-align: center; padding: 0 28px; }
+/* 手機不提供 VR 模式（VR 請用 Quest 頭戴裝置），隱藏 ENTER VR 按鈕 */
+html.m-mobile #VRButton { display: none !important; }
+/* 手機儲存圖片視窗（不透明背景，只留必要說明） */
+.m-save { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; padding: calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));
+  background: #06080d; color: #fff; font-family: "Noto Sans TC","Work Sans",sans-serif; text-align: center; }
+.m-save img { max-width: 92vw; max-height: 60vh; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+  -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
+.m-save .m-save-tip { font-size: 15px; line-height: 1.5; color: #FDE68A; }
+.m-save .m-save-tip small { display: block; font-size: 12.5px; color: rgba(255,255,255,.7); margin-top: 2px; }
+.m-save .m-save-row { display: flex; gap: 10px; justify-content: center; }
+.m-save button { padding: 10px 20px; border-radius: 9999px; font-size: 14px; border: 1px solid rgba(251,191,36,.6); color: #FDE68A; background: transparent; }
+.m-save button.m-primary { background: #FBBF24; color: #111; border-color: #FBBF24; font-weight: 700; }
+</style>
+<script id="mobile-fix-2-js">
+(function () {
+  var html = document.documentElement;
+  var isMobile = function () { return html.classList.contains('m-mobile'); };
+
+  /* 1. 背景全景（p02、p05–p11）：手機上依螢幕高度完整展開，可左右拖曳看到整張圖；圓點放回原本的物件上 */
+  var dc = document.getElementById('drag-canvas'), img = document.getElementById('bgImage'), vp = document.getElementById('viewport');
+  var spotsOf = function () { return window.SPOTS || (typeof SPOTS !== 'undefined' ? SPOTS : null); };
+  var hasSpots = typeof placeHotspots === 'function' && spotsOf();
+  var hasP02 = typeof layoutSpots === 'function';
+  if (dc && img && vp && typeof maxPan === 'function' && (hasSpots || hasP02)) {
+    var origMaxPan = maxPan, origPlace = hasSpots ? placeHotspots : null, fitted = false;
+    var mobilePlace = function () {
+      var cw = dc.clientWidth, ch = dc.clientHeight, nw = img.naturalWidth, nh = img.naturalHeight;
+      if (!nw) return;
+      var s = Math.max(cw / nw, ch / nh), rw = nw * s, rh = nh * s, ox = (cw - rw) / 2, oy = (ch - rh) / 2;
+      spotsOf().forEach(function (sp) {
+        var el = document.getElementById(sp.el);
+        if (!el || typeof sp.ix !== 'number') return;
+        el.style.left = (ox + sp.ix * rw) + 'px';
+        var land = vp.clientWidth > vp.clientHeight;
+        el.style.top = (land ? Math.max(92, Math.min(ch - 78, oy + sp.iy * rh)) : Math.max(96, Math.min(ch - 140, oy + sp.iy * rh))) + 'px';
+      });
+    };
+    var fit = function () {
+      if (isMobile() && img.naturalWidth) {
+        var vw = vp.clientWidth, vh = vp.clientHeight, ar = img.naturalWidth / img.naturalHeight;
+        var land = vw > vh;
+        var w = Math.round(Math.max(vw * (land ? (hasP02 ? 1.05 : 1.15) : (hasP02 ? 1.2 : 1.4)), vh * ar));
+        dc.style.width = w + 'px'; dc.style.left = Math.round(-(w - vw) / 2) + 'px';
+        maxPan = function () { return Math.max(0, (dc.offsetWidth - vp.clientWidth) / 2 - 1); };
+        if (hasSpots) placeHotspots = mobilePlace;
+        fitted = true;
+      } else if (fitted) {
+        dc.style.width = ''; dc.style.left = ''; maxPan = origMaxPan;
+        if (hasSpots) placeHotspots = origPlace;
+        fitted = false;
+      } else { return; }
+      if (hasSpots) placeHotspots(); else {
+        layoutSpots();
+        if (fitted) { var chh = dc.clientHeight; document.querySelectorAll('.spotBtn[data-px]').forEach(function (b) { var ty = parseFloat(b.style.top); b.style.display = (ty > chh - 60 || ty < 70) ? 'none' : ''; b.style.top = Math.max(80, Math.min(chh - 78, ty)) + 'px'; }); }
+      }
+      if (typeof renderLayer === 'function') renderLayer();
+    };
+    if (img.complete) fit();
+    img.addEventListener('load', function () { setTimeout(fit, 0); });
+    var t = null;
+    window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 150); });
+    [300, 600, 1200, 2000, 3000, 4500].forEach(function (d) { setTimeout(fit, d); });
+    if (window.visualViewport) visualViewport.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 150); });
+    window.addEventListener('orientationchange', function () { setTimeout(fit, 300); setTimeout(fit, 900); });
+  }
+
+  /* 2. 3D 模型：手機上以完整解析度顯示，避免看起來霧霧的 */
+  if (window.customElements && customElements.whenDefined) {
+    customElements.whenDefined('model-viewer').then(function () {
+      var MV = customElements.get('model-viewer');
+      if (MV && isMobile()) { try { MV.minimumRenderScale = 1; } catch (e) {} }
+    });
+  }
+
+  /* 3. 手機上沒有 VR 按鈕時，顯示一行說明 */
+  {
+    var addNote = function () {
+      if (!isMobile() || !document.getElementById('VRButton') || document.querySelector('.m-vr-note')) return;
+      var n = document.createElement('div'); n.className = 'm-vr-note';
+      var en = false; try { en = localStorage.getItem('preferred_lang') === 'en'; } catch (e) {}
+      n.innerHTML = '<span class="zh"' + (en ? ' style="display:none"' : '') + '>VR 模式請使用頭戴裝置體驗</span>' +
+                    '<span class="en"' + (en ? '' : ' style="display:none"') + '>VR mode needs a headset</span>';
+      document.body.appendChild(n);
+    };
+    setTimeout(addNote, 1500); setTimeout(addNote, 4000);
+  }
+
+  /* 4. 學習成果頁：手機上按「下載」時，顯示圖片，長按或按「分享／儲存」即可存到相簿 */
+  if (!document.getElementById('btnDownloadCard') && !document.getElementById('btnDownloadSachet')) return;
+  var origClick = HTMLAnchorElement.prototype.click, quietUntil = 0;
+  if (typeof showToast === 'function') {
+    var origToast = showToast;
+    showToast = function () { if (Date.now() < quietUntil) return; return origToast.apply(this, arguments); };
+  }
+  function openSave(a) {
+    var href = a.href, name = a.download, file = null;
+    try {
+      if (navigator.canShare && window.File && /^data:/.test(href)) {
+        var parts = href.split(','), mime = (parts[0].match(/data:([^;]+)/) || [])[1] || 'image/png';
+        var bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        file = new File([arr], name || 'image.png', { type: mime });
+        if (!navigator.canShare({ files: [file] })) file = null;
+      }
+    } catch (e) { file = null; }
+    var box = document.createElement('div');
+    box.className = 'm-save';
+    box.innerHTML =
+      '<img alt="">' +
+      '<p class="m-save-tip">按「下載」或長按圖片，即可存到手機<small>Tap Download, or long-press the image to save it.</small></p>' +
+      '<div class="m-save-row">' +
+      '<button type="button" class="m-primary" data-act="file">下載 Download</button>' +
+      (file ? '<button type="button" data-act="share">分享 Share</button>' : '') +
+      '<button type="button" data-act="close">關閉 Close</button></div>';
+    box.querySelector('img').src = href;
+    box.addEventListener('click', function (e) {
+      var act = e.target && e.target.getAttribute('data-act');
+      if (act === 'close' || e.target === box) box.remove();
+      else if (act === 'file') origClick.call(a);
+      else if (act === 'share' && file) navigator.share({ files: [file], title: name }).catch(function () {});
+    });
+    document.body.appendChild(box);
+  }
+  HTMLAnchorElement.prototype.click = function () {
+    if (isMobile() && this.hasAttribute('download') && /^(data:|blob:)/.test(this.href || '')) {
+      quietUntil = Date.now() + 1500;
+      openSave(this);
+      return;
+    }
+    return origClick.apply(this, arguments);
+  };
+})();
+</script>
+<style id="mobile-fix-3-css">
+/* 「VR 模式請使用頭戴裝置體驗」：改到上方置中，顯示 6 秒後自動淡出，不再擋到底部按鈕 */
+html.m-mobile .m-vr-note { left: 50% !important; right: auto !important; bottom: auto !important;
+  top: calc(60px + env(safe-area-inset-top, 0px)) !important; transform: translateX(-50%); max-width: 90% !important;
+  white-space: nowrap; background: rgba(0,0,0,.75) !important; animation: m-vr-note-out 6.5s ease forwards; }
+@keyframes m-vr-note-out { 0%, 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+html.m-mobile #loadingText { text-wrap: balance; }
+.m-save .m-save-row { flex-wrap: wrap; }
+html.m-p12pan #drag-canvas #bgImage { animation: m-p12pan 30s ease-in-out infinite !important; will-change: transform; }
+@keyframes m-p12pan { 0%,100% { transform: scale(1.1) translateX(-1.5%); } 50% { transform: scale(1.1) translateX(1.5%); } }
+@media (prefers-reduced-motion: reduce) { html.m-p12pan #drag-canvas #bgImage { animation: none !important; } }
+</style>
+<script id="mobile-fix-3-js">
+(function () {
+  var html = document.documentElement;
+  var isMobile = function () { return html.classList.contains('m-mobile'); };
+  /* 換頁標題：「&」和後面的字不分開，避免 & 單獨留在行尾 */
+  var lt = document.getElementById('loadingText');
+  if (lt) {
+    var bind = function () {
+      var w = document.createTreeWalker(lt, NodeFilter.SHOW_TEXT), t;
+      while ((t = w.nextNode())) {
+        var s = t.nodeValue, o = s.replace(/\s+&\s+/g, ' & ');
+        if (o !== s) t.nodeValue = o;
+      }
+    };
+    bind();
+    new MutationObserver(bind).observe(lt, { childList: true, subtree: true, characterData: true });
+  }
+  /* 學習成果頁：手機上背景自動緩慢左右移動（不需要拖曳） */
+  var dc = document.getElementById('drag-canvas'), img = document.getElementById('bgImage'), vp = document.getElementById('viewport');
+  if (document.getElementById('btnOpenCard') && dc && img && vp && typeof maxPan === 'function') {
+    var origMP = maxPan, on = false;
+    var fit = function () {
+      if (isMobile() && img.naturalWidth) {
+        var vw = vp.clientWidth, vh = vp.clientHeight, ar = img.naturalWidth / img.naturalHeight;
+        var w = Math.round(Math.max(vw * 1.3, vh * ar));
+        dc.style.width = w + 'px'; dc.style.left = Math.round(-(w - vw) / 2) + 'px';
+        dc.style.setProperty('--mpan', Math.max(0, Math.round((w - vw) / 2) - 2) + 'px');
+        html.classList.add('m-p12pan');
+        maxPan = function () { return 0; };
+        try { dragX = 0; } catch (e) {}
+        on = true;
+      } else if (on) {
+        dc.style.width = ''; dc.style.left = ''; html.classList.remove('m-p12pan'); maxPan = origMP; on = false;
+      } else { return; }
+      if (typeof renderLayer === 'function') renderLayer();
+    };
+    if (img.complete) fit();
+    img.addEventListener('load', function () { setTimeout(fit, 0); });
+    var t = null;
+    window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 150); });
+    setTimeout(fit, 600); setTimeout(fit, 2000);
+  }
+})();
+</script>
+<style id="mobile-fix-4-css">
+/* 橫拿：3D 視窗改成左右排列，左邊模型（佔滿高度）、右邊標題與說明 */
+html.m-land #modelLayer > .pop-in { display: grid !important; grid-template-columns: minmax(0, 1fr) 36%; column-gap: 16px;
+  grid-template-rows: auto auto 1fr auto; align-content: start; max-width: 100% !important; width: 100% !important;
+  height: calc(100dvh - 16px) !important; overflow: hidden !important; padding: 10px 12px !important; }
+html.m-land #modelLayer > .pop-in > * { grid-column: 2; min-width: 0; }
+html.m-land #modelLayer #model-container { grid-column: 1 !important; grid-row: 1 / -1 !important; height: 100% !important; margin: 0 !important; }
+html.m-land #modelLayer > .pop-in > .pr-12 { padding-right: 44px; padding-top: 4px; }
+html.m-land #modelLayer #txtModelBody { overflow-y: auto; font-size: 13px !important; line-height: 1.6 !important; margin-top: 8px !important; }
+html.m-land #modelLayer #txtModelHint { margin-top: 6px !important; }
+html.m-land #modelLayer > .pop-in > div[aria-hidden="true"] { display: none; }
+html.m-land #btnModelClose { top: 8px !important; right: 8px !important; }
+/* 直拿：王船視窗較高，圓點不會擠在一起 */
+html.m-por #modelLayer #model-container:has(.mv-hot) { height: min(44vh, 340px) !important; }
+/* 3D 模型上的圓點：手機上加大、加大可點範圍，點中時放大發亮並顯示名稱 */
+html.m-mobile .mv-hot { padding: 12px !important; margin: -12px; }
+html.m-mobile .mv-dot { width: 20px !important; height: 20px !important; border: 2px solid rgba(255,255,255,.85); }
+html.m-mobile .mv-hot.m-on .mv-dot { transform: scale(1.45); background: #FDE68A !important; box-shadow: 0 0 0 4px rgba(251,191,36,.45), 0 0 18px rgba(251,191,36,.9) !important; }
+html.m-mobile .mv-hot.m-on .mv-tip { opacity: 1 !important; left: 30px; top: 6px; }
+html.m-mobile .mv-hot.m-on { z-index: 5; }
+html.m-por #modelLayer #model-container { transition: height .25s ease; }
+/* 手機上圓點的可點範圍略縮小，相鄰圓點不會互相蓋住 */
+html.m-mobile .spot { width: 2.25rem !important; height: 2.25rem !important; }
+/* 說明視窗（測試成功、圓點解說、學習任務）：手機上蓋在按鈕上方，內容太長時可捲動，不會被切掉 */
+html.m-mobile #successLayer, html.m-mobile #spotLayer, html.m-mobile #quizLayer { z-index: 95 !important; }
+html.m-mobile #successLayer > .pop-in, html.m-mobile #spotLayer > .pop-in, html.m-mobile #quizLayer > .pop-in,
+html.m-mobile #successLayer > div:not([id]), html.m-mobile #spotLayer > div:not([id]), html.m-mobile #quizLayer > div:not([id]) {
+  max-height: calc(100dvh - 24px) !important; overflow-y: auto !important; }
+html.m-land #successLayer, html.m-land #spotLayer, html.m-land #quizLayer { padding: 10px !important; }
+/* 場景標題：手機上不擋住圓點（可直接點到標題下面的圓點） */
+html.m-mobile #txtSceneTitle { pointer-events: none; }
+html.m-mobile #txtSceneTitle, html.m-mobile #txtSceneTitle * { pointer-events: none; }
+html.m-mobile #txtSceneTitle { text-shadow: 0 2px 10px rgba(0,0,0,.95); }
+html.m-land #txtSceneTitle { font-size: 15px !important; line-height: 1.3 !important; max-width: 64vw; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
+html.m-land .m-title-wrap { top: calc(58px + env(safe-area-inset-top,0px)) !important; pointer-events: none; }
+html.m-land .m-title-wrap .panel-sub { display: none; }
+/* 3D 模型視窗：橫拿時配合螢幕高度 */
+html.m-land #modelLayer { padding: 8px !important; }
+html.m-land #txtModelTitle { font-size: 17px !important; }
+html.m-land #txtModelSub { margin-top: 2px !important; }
+/* 儲存圖片視窗：橫拿時按鈕不被切掉 */
+.m-save { overflow-y: auto; justify-content: safe center; }
+@media (max-height: 500px) {
+  .m-save { gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+  .m-save img { max-height: calc(100dvh - 130px); }
+  .m-save .m-save-tip { font-size: 13px; }
+  .m-save .m-save-tip small { font-size: 11px; }
+  .m-save button { padding: 7px 16px; font-size: 13px; }
+}
+</style>
+<script id="mobile-fix-4-js">
+(function () {
+  var html = document.documentElement;
+  var isMobile = function () { return html.classList.contains('m-mobile'); };
+  var t = document.getElementById('txtSceneTitle');
+  if (t && t.parentElement) t.parentElement.classList.add('m-title-wrap');
+  /* 3D 模型：手機上自動調整距離，讓整個模型剛好放進框內（不會太大或太小） */
+  var mc = document.getElementById('model-container');
+  if (mc) {
+    /* 手機上的 3D 模型：停止自動旋轉，依模型實際尺寸計算鏡頭距離，讓模型填滿視窗約九成；
+       直拿時依模型比例調整視窗高度，減少上下空白 */
+    var frame = function (mv) {
+      if (!isMobile() || !mv.getDimensions) return;
+      var d = mv.getDimensions(); if (!d || !d.y) return;
+      mv.removeAttribute('auto-rotate');
+      var o = (mv.getAttribute('camera-orbit') || '0deg 75deg 100%').split(/\s+/);
+      var th = (parseFloat(o[0]) || 0) * Math.PI / 180, ph = (parseFloat(o[1]) || 75) * Math.PI / 180;
+      var wv = Math.abs(d.x * Math.cos(th)) + Math.abs(d.z * Math.sin(th));
+      var dep = Math.abs(d.z * Math.cos(th)) + Math.abs(d.x * Math.sin(th));
+      var hv = d.y * Math.sin(ph) + dep * Math.abs(Math.cos(ph));
+      if (html.classList.contains('m-por') && !mv.querySelector('.mv-hot')) {
+        var cw0 = mc.clientWidth || 300;
+        var want = Math.round(Math.max(240, Math.min(Math.min(440, window.innerHeight * 0.55), cw0 * (hv / wv) * 1.2)));
+        if (Math.abs(mc.clientHeight - want) > 4) mc.style.height = want + 'px';
+      } else { mc.style.height = ''; }
+      var cw = mv.clientWidth || mc.clientWidth, ch = mv.clientHeight || mc.clientHeight; if (!cw || !ch) return;
+      var fov = 30 * Math.PI / 180, t = Math.tan(fov / 2), asp = cw / ch;
+      /* 王船（有圓點的模型）：船首斜桅與繩索很細，允許稍微超出框邊，讓船身更大 */
+      /* 依模型最靠近鏡頭的一面計算（避免透視讓前緣放大而被切掉），四周留約 8% 空間 */
+      var boat = !!mv.querySelector('.mv-hot'), por = html.classList.contains('m-por');
+      /* 直拿時畫面很窄：王船以船身為準放大，細長的船首斜桅可稍微超出框邊 */
+      var k = boat ? (por ? 0.74 : 0.98) : 1.16;
+      var dist = Math.max((hv * k / 2) / t, (wv * k / 2) / (t * asp)) + dep * (boat && por ? 0.2 : 0.5);
+      mv.setAttribute('min-field-of-view', '10deg');
+      mv.setAttribute('field-of-view', '30deg');
+      mv.setAttribute('min-camera-orbit', 'auto auto ' + (dist * 0.3).toFixed(3) + 'm');
+      mv.setAttribute('max-camera-orbit', 'auto auto ' + (dist * 2.5).toFixed(3) + 'm');
+      mv.setAttribute('camera-orbit', (o[0] || '0deg') + ' ' + (o[1] || '75deg') + ' ' + dist.toFixed(3) + 'm');
+      if (mv.jumpCameraToGoal) mv.jumpCameraToGoal();
+    };
+    var hook = function () {
+      mc.querySelectorAll('model-viewer').forEach(function (mv) {
+        if (mv.__mFrame) return; mv.__mFrame = true;
+        if (isMobile()) mv.removeAttribute('auto-rotate');
+        var go = function () { frame(mv); setTimeout(function () { frame(mv); }, 120); };
+        mv.addEventListener('load', function () { setTimeout(go, 50); });
+        if (mv.loaded) go();
+      });
+    };
+    new MutationObserver(hook).observe(mc, { childList: true, subtree: true });
+    var rt = null;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { mc.querySelectorAll('model-viewer').forEach(frame); }, 150); });
+    /* 王船上的圓點：點中的那一個放大發亮，並顯示名稱 */
+    mc.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.mv-hot'); if (!b) return;
+      mc.querySelectorAll('.mv-hot.m-on').forEach(function (x) { x.classList.remove('m-on'); });
+      b.classList.add('m-on');
+    }, true);
+  }
+  /* 第 2 頁：手機上兩個操作提示框 7 秒後自動淡出，或開始拖曳時就淡出 */
+  if (document.getElementById('hotspotsFloat')) {
+    var tip = document.getElementById('center-tooltips');
+    var hide = function () { if (isMobile() && tip) { tip.classList.remove('opacity-100'); tip.classList.add('opacity-0'); tip.style.pointerEvents = 'none'; } };
+    setTimeout(hide, 7000);
+    var dc = document.getElementById('drag-canvas');
+    if (dc) dc.addEventListener('touchmove', hide, { passive: true });
+  }
+})();
+</script>
+<script id="bgm-tap-fix">
+/* 手機背景音樂修正：手機瀏覽器只在「手指放開」時才允許播放聲音，
+   原本在手指一碰到螢幕時就嘗試播放並且只試一次，所以會失敗。
+   這裡改成每次點擊放開時，若音樂尚未播放、使用者也沒有按靜音，就再試一次。 */
+(function () {
+  var b = document.getElementById('bg-audio'); if (!b) return;
+  var userMuted = false;
+  var ab = document.getElementById('btnAudio');
+  if (ab) ab.addEventListener('click', function () { setTimeout(function () { userMuted = b.paused; }, 120); });
+  var vs = document.getElementById('volSlider');
+  if (vs) vs.addEventListener('input', function () { userMuted = Number(vs.value) === 0; });
+  var tryPlay = function (e) {
+    if (userMuted || !b.paused) return;
+    if (e && e.target && e.target.closest && e.target.closest('#btnAudio, #volPopup')) return;
+    var v = 0.15; try { v = volume; } catch (_) {}
+    if (!(v > 0)) return;
+    b.play().then(function () { try { bgmOn = true; setAudioIcon(); } catch (_) {} }).catch(function () {});
+  };
+  ['pointerup', 'touchend', 'click', 'keydown'].forEach(function (t) { window.addEventListener(t, tryPlay, { capture: true }); });
+})();
+</script>
+</body>
+</html>
